@@ -64,6 +64,8 @@ class WaveformWidget(QWidget):
         # 自动色相旋转
         self._auto_hue = True
         self._last_manual_hue = _time.time()
+        # 波形平滑滚动（消除亚像素抖动）
+        self._scroll_phase = 0.0
 
         # 窗口
         self._setup_window()
@@ -84,10 +86,14 @@ class WaveformWidget(QWidget):
         # 启动音频
         self._audio.start()
 
-        # 60fps 刷新
+        # 垂直同步：匹配屏幕刷新率
+        screen = QApplication.primaryScreen()
+        refresh = screen.refreshRate()
+        interval = int(1000 / refresh) if refresh > 0 else 16
+        self._frame_interval = interval / 1000.0  # 秒
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
-        self._timer.start(16)
+        self._timer.start(interval)
 
     # ----------------------------------------------------------
     # 模式 & 特效控制
@@ -240,9 +246,14 @@ class WaveformWidget(QWidget):
         gain = min(gain, WAVE_GAIN_MAX)
 
         step = max(1.0, len(smoothed) / w)
+        # 亚像素滚动对齐：基于帧间隔估算每帧推进的像素数
+        samples_per_frame = SAMPLE_RATE * self._frame_interval
+        self._scroll_phase = (self._scroll_phase + samples_per_frame / step) % 1.0
+        phase_offset = self._scroll_phase * step
+
         raw_pts = []
         for px in range(w + 1):
-            idx = min(int(px * step), len(smoothed) - 1)
+            idx = min(int(px * step + phase_offset), len(smoothed) - 1)
             y_off = smoothed[idx] * amplitude * gain
             # 裁剪避免溢出
             y_off = max(-mid_y + 1, min(mid_y - 1, y_off))

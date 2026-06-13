@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor
 # ---- 音频参数 ----
 SAMPLE_RATE = 44100          # 采样率
 BLOCK_SIZE = 512             # 每次采集的采样块大小（越小延迟越低）
-DISPLAY_DURATION = 0.25      # 显示时长（秒）— 越长变化越慢
+DISPLAY_DURATION = 0.15      # 显示时长（秒）— 越长变化越慢
 DISPLAY_SAMPLES = int(SAMPLE_RATE * DISPLAY_DURATION)
 
 # ---- 频谱参数 ----
