@@ -74,21 +74,6 @@ build.bat
 
 所有参数在 `config.py` 中集中管理：
 
-```python
-# 窗口
-WINDOW_WIDTH = 360
-WINDOW_HEIGHT = 100
-
-# 频谱
-NUM_BARS = 48
-SMOOTHING = 0.75
-
-# 波形线条
-WAVE_LINE_WIDTH = 2.8
-WAVE_GRADIENT_HUE_SPAN = 150
-WAVE_AMPLITUDE_RATIO = 0.55
-```
-
 ## 📁 项目结构
 
 ```
