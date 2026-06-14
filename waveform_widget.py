@@ -35,6 +35,7 @@ from config import (
 from audio_capture import AudioCapture
 from tray_manager import TrayManager
 from color_picker import ColorPickerPopup
+from settings import load as load_settings, save as save_settings
 
 
 class WaveformWidget(QWidget):
@@ -48,11 +49,14 @@ class WaveformWidget(QWidget):
         super().__init__()
         self._app = app
         self._color_picker = None
-        self._mode = self.MODE_WAVEFORM
 
-        # 颜色状态
-        self._current_hue = DEFAULT_HUE
+        # 加载持久化设置
+        saved = load_settings()
+        self._mode = saved.get("mode", self.MODE_WAVEFORM)
+        self._current_hue = saved.get("hue", DEFAULT_HUE)
+        self._auto_hue = saved.get("auto_hue", True)
         self._update_colors()
+        self._save()  # 确保配置文件存在
 
         # 音频采集
         self._audio = AudioCapture()
@@ -98,6 +102,13 @@ class WaveformWidget(QWidget):
     # ----------------------------------------------------------
     # 模式 & 特效控制
     # ----------------------------------------------------------
+    def _save(self):
+        save_settings({
+            "hue": int(self._current_hue) % 360,
+            "mode": self._mode,
+            "auto_hue": self._auto_hue,
+        })
+
     def toggle_mode(self):
         """切换 波形 ↔ 频谱"""
         self._mode = (
@@ -105,11 +116,13 @@ class WaveformWidget(QWidget):
             else self.MODE_WAVEFORM
         )
         self._spectrum_smooth = np.zeros(NUM_BARS)
+        self._save()
 
     def toggle_auto_hue(self):
         """切换自动色相旋转"""
         self._auto_hue = not self._auto_hue
         self._last_manual_hue = _time.time()
+        self._save()
         return self._auto_hue
 
     def _update_auto_hue(self):
@@ -183,6 +196,7 @@ class WaveformWidget(QWidget):
         self._last_manual_hue = _time.time()
         self._update_colors()
         self._tray.refresh_icon()
+        self._save()
 
     def _show_color_picker(self):
         if self._color_picker is not None:

@@ -16,6 +16,9 @@ dist/
 *.spec
 *.manifest
 
+# User settings
+settings.json
+
 # IDE
 .vscode/
 .idea/
