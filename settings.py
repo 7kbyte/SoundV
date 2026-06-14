@@ -1,15 +1,18 @@
 """
-设置持久化模块 — JSON 文件存储
+设置持久化模块 — JSON 文件存储于 %APPDATA%
 """
 import json
 import os
 
-SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
+# 存储路径：%APPDATA%\AudioVisualizer\settings.json
+APP_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "AudioVisualizer")
+os.makedirs(APP_DIR, exist_ok=True)
+SETTINGS_FILE = os.path.join(APP_DIR, "settings.json")
 
 DEFAULTS = {
     "hue": 175,         # 色相 0-359
     "mode": "waveform", # "waveform" | "spectrum"
-    "auto_hue": True,   # 自动色相旋转
+    "auto_hue": False,  # 自动色相旋转（默认关闭）
 }
 
 
@@ -19,11 +22,13 @@ def load() -> dict:
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            # 补全缺失的键
-            for key, val in DEFAULTS.items():
-                data.setdefault(key, val)
-            return data
-    except (json.JSONDecodeError, IOError):
+            # 类型强制转换，防止 JSON 类型偏差
+            result = {}
+            result["hue"] = int(data.get("hue", DEFAULTS["hue"])) % 360
+            result["mode"] = str(data.get("mode", DEFAULTS["mode"]))
+            result["auto_hue"] = bool(data.get("auto_hue", DEFAULTS["auto_hue"]))
+            return result
+    except (json.JSONDecodeError, IOError, ValueError):
         pass
     return DEFAULTS.copy()
 

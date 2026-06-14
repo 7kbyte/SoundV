@@ -150,7 +150,7 @@ class TrayManager:
 
     def _quit(self):
         """完全退出"""
-        # 通过 parent 触发清理
+        self._parent._save()
         self._parent._stop_audio_capture()
         self._tray_icon.hide()
         self._app.quit()

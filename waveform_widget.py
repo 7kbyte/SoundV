@@ -54,7 +54,7 @@ class WaveformWidget(QWidget):
         saved = load_settings()
         self._mode = saved.get("mode", self.MODE_WAVEFORM)
         self._current_hue = saved.get("hue", DEFAULT_HUE)
-        self._auto_hue = saved.get("auto_hue", True)
+        self._auto_hue = saved.get("auto_hue", False)
         self._update_colors()
         self._save()  # 确保配置文件存在
 
